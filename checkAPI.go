@@ -9,9 +9,17 @@
      "regexp"
      "strings"
      "time"
+     "github.com/joho/godotenv"
+     "log"
  )
 
-var url_petstore = "https://petstore.swagger.io/v2/pet"
+// var URL_API = "https://petstore.swagger.io/v2/pet"
+func init() {
+    // loads values from .env into the system
+    if err := godotenv.Load(); err != nil {
+        log.Print("No .env file found")
+    }
+}
 
  func CheckLen() error {
 
@@ -23,19 +31,22 @@ var url_petstore = "https://petstore.swagger.io/v2/pet"
  }
 
  func main() {
+url_petstore, exists := os.LookupEnv("URL_API")
     defer func() {
          if rec := recover(); rec != nil {
             fmt.Println(rec,"\nUse external arguments in input")
          }
     }()
+    if exists {
     CheckLen()
-    resp_body := CreatePets()
+}
+    resp_body := CreatePets(url_petstore)
     time.Sleep(10 * time.Second)
 
-    GetPets(resp_body)
+    GetPets(resp_body,url_petstore)
  }
 
- func CreatePets() (resp_body string) {
+ func CreatePets(url_petstore string) (resp_body string) {
 
     fmt.Println("URL:>", url_petstore)
     petname := os.Args[1]
@@ -47,7 +58,7 @@ var url_petstore = "https://petstore.swagger.io/v2/pet"
     return string(body)
  }
 
-func GetPets (getpet_body string) {
+func GetPets (getpet_body string, url_petstore string) {
 
     jsonResp := getpet_body
     id_value := GetValueFromJson(jsonResp, "id")
